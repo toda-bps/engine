@@ -673,19 +673,21 @@ public class PlatformViewsController implements PlatformViewsAccessibilityDelega
     // framework converts them to be local to a widget, given that
     // motion events operate on local coords, we need to replace these in the tracked
     // event with their local counterparts.
+    boolean useTrackedEvent = !usingVirtualDiplay && trackedEvent != null;
+    int pointerCount = useTrackedEvent ? trackedEvent.getPointerCount() : touch.pointerCount;
     PointerProperties[] pointerProperties =
         parsePointerPropertiesList(touch.rawPointerPropertiesList)
-            .toArray(new PointerProperties[touch.pointerCount]);
+            .toArray(new PointerProperties[pointerCount]);
     PointerCoords[] pointerCoords =
         parsePointerCoordsList(touch.rawPointerCoords, density)
-            .toArray(new PointerCoords[touch.pointerCount]);
+            .toArray(new PointerCoords[pointerCount]);
 
-    if (!usingVirtualDiplay && trackedEvent != null) {
+    if (useTrackedEvent) {
       return MotionEvent.obtain(
           trackedEvent.getDownTime(),
           trackedEvent.getEventTime(),
-          touch.action,
-          touch.pointerCount,
+          trackedEvent.getAction(),
+          pointerCount,
           pointerProperties,
           pointerCoords,
           trackedEvent.getMetaState(),
@@ -704,7 +706,7 @@ public class PlatformViewsController implements PlatformViewsAccessibilityDelega
         touch.downTime.longValue(),
         touch.eventTime.longValue(),
         touch.action,
-        touch.pointerCount,
+        pointerCount,
         pointerProperties,
         pointerCoords,
         touch.metaState,
